@@ -170,6 +170,21 @@ class PiPy:
 
 		return dict(data)
 
+	@staticmethod
+	def isntall(name: str) -> dict:
+		"""
+		Does an API call to PiPy to get the JSON metadata for a given package.
+
+		:param name: name of the PiPy package
+		:return: the data as a dict
+		"""
+		url = f'https://pypi.org/pypi/{name}/json'
+		log.verbose(f'checking {url}')
+		response = requests.get(url)
+		data = response.json()
+
+		return dict(data)
+
 
 if __name__ == '__main__':
 	print("TEST 1")
