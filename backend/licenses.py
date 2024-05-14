@@ -8,8 +8,24 @@ class License:
 		self.licensetext = licensetext
 		self.licensefile = licensefile
 		self.license = license
-	def compare(self, config: Config) -> bool:
-		return False
+	
+	def compare_config(self, config: Config) -> int:
+		"""
+		Compares the client configuration with this license for compatability.
+
+		:param config: the config to compare this license to
+		:return: 0,1,2 or 3 depending on compatability rating (0 highest, 4 lowest)
+		"""
+		return 4
+
+	def compare_license(self, other: License) -> int:
+		"""
+		Compares this license with the provided other license
+
+		:param other: the license to compare this license to
+		:return: 0,1,2 or 3 depending on compatability rating (0 highest, 4 lowest)
+		"""
+		return 4
 
 def get_package(name):
 	pkg_data = metadata.metadata(name)
