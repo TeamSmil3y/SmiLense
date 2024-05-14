@@ -1,5 +1,7 @@
 from pigeon.shortcuts import Log
+from rich import print
 import pip
+import subprocess
 from importlib import metadata as importlib_metadata
 from importlib.metadata import Distribution, requires
 from typing import Any
@@ -7,6 +9,7 @@ from smilense import Config
 import requests
 import json
 import re
+from random import choice
 
 
 log = Log("PiPy-API", "#03e3fc")
@@ -87,17 +90,111 @@ class PiPyPackage:
 
 class PiPy:
 	@staticmethod
+	def execute_safe(name, func):
+		# install package
+		...
+		func(name)
+		# uninstall package
+		...
 
+	@staticmethod
+	def get_dependencies(name: str) -> list[str]:
+		"""
+		Grabs the dependencies of a PiPy package
+
+		:param name: PiPy package name
+		:return: list of dependencies
+		"""
+		dependency_info = PiPy.get_dependency_info(name)
+		
+		if not isinstance(dependency_info, list):
+			return None
+		else:
+			if not dependency_info: return dependency_info
+			return PiPy.flatten_dependencies(dependency_info[0])
+
+	@staticmethod
+	def flatten_dependencies(dependency_info: dict) -> list[str]:
+		"""
+		Flattens the json dependency_info to a list of dependencies
+
+		:param dependency_info: the json data for dependencies
+		:returns: flat list of strings (name of PiPy dependencies)
+		"""
+		dependencies = [dependency_info.get('key')]
+		if further_dependencies:=dependency_info.get('dependencies'):
+			for further_dependency in further_dependencies:
+				dependencies += PiPy.flatten_dependencies(further_dependency)
+		return dependencies
+
+
+	@staticmethod
+	def get_dependency_info(name: str) -> list:
+		"""
+		Grabs the dependency info of a PiPy package
+
+		:param name: PiPy package name
+		:return: list of dependencies
+		"""
+		cmd = f'pipdeptree --packages {name} --json-tree'
+		print(f'RUNNING [bold yellow]{cmd}[/]')
+		data = subprocess.getoutput(cmd)
+		if isinstance(data, str):
+			if not data: 
+				return []
+			dependencies = json.loads(data)
+			return(dependencies)
+		else:
+			print(f'DEPENDENCIES INVALID: {type(data)}, {data}')
 
 	@staticmethod
 	def get_license(name: str) -> str:
 		"""
 		Grabs license of package by PiPy name
 
-		:param name: gets license from PiPy package name
+		:param name: PiPy package name
 		:return: str for license or None
 		"""
-		pkg = get_pkg()
+		license_info = PiPy.get_licenses(name)
+		if not license_info:
+			return None
+		else:
+			return license_info[0].get('LicenseText')
+
+	@staticmethod
+	def get_all_licenses(name: str) -> list[str]:
+		"""
+		Grabs all licenses from all dependencies of a PyPI package
+
+		:param name: the name of the PyPI package
+		:return: list of licenses as list[str]
+		"""
+		# get all dependencies
+		dependencies = [name, *PiPy.get_dependencies(name)]
+
+		licenses = []
+		for dependency in dependencies:
+			license = PiPy.get_license(dependency)
+			if license:
+				licenses.append(license)
+		return licenses
+
+	@staticmethod
+	def get_licenses(name: str) -> list:
+		"""
+		Grabs license info of package by PiPy name
+
+		:param name: PiPy package name
+		:return: str for license or None
+		"""
+		cmd = f'pip-licenses --with-license-file --format=json --packages {name}'
+		print(f'RUNNING [bold yellow]{cmd}[/]')
+		data = subprocess.getoutput(cmd)
+		if isinstance(data, str):
+			licenses = json.loads(data)
+			return(licenses)
+		else:
+			print(f'LICENSE INVALID: {type(data)}, {data}')
 
 	@staticmethod
 	def get_pkg_metadata(name: str):
@@ -172,14 +269,23 @@ class PiPy:
 
 
 if __name__ == '__main__':
-	print("TEST 1")
+	examples = [
+		'numpy',
+		'sqlalchemy',
+		'flask',
+		'django',
+		'beautifulsoup4',
+		'pigeonpost',
+		'sqlite3',
+	]
 
-	pkg  = PiPy.get_pkg('numpy')
-	pkg  = PiPy.get_pkg('sqlalchemy')
-	pkg  = PiPy.get_pkg('flask')
-	print(PiPy.get_pkg_repo('flask'))
-	print(PiPy.get_pkg_repo('django'))
-	print(PiPy.get_pkg_repo('sqlalchemy'))
-	print(PiPy.get_pkg_repo('beautifulsoup4', 'bs4'))
-	print(PiPy.get_pkg_repo('pigeonpost', 'pigeon'))
-	print(PiPy.get_pkg_repo('sqlite3', 'sqlite3'))
+	test_case = choice(examples)
+
+	print(f'[bold green]TESTCASE:[/] [bold yellow](LICENSES)[/] {test_case}')
+	print(PiPy.get_license(test_case))
+
+	print(f'[bold green]TESTCASE:[/] [bold yellow](DEPENDENCIES)[/] {test_case}')
+	print(PiPy.get_dependencies(test_case))
+
+	print(f'[bold green]TESTCASE:[/] [bold yellow](ALL LICENSES)[/] {test_case}')
+	print(PiPy.get_all_licenses(test_case))
