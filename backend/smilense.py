@@ -1,42 +1,15 @@
+import json
+from nlp.extract_key_points import extract_key_points
 import yaml
 import base64
 from pigeon.shortcuts import Log
 import sqlalchemy as sql
 from sqlalchemy import Table, Column, desc, func
+from pipy import PiPy as PyPI
+from nlp.db_init import *
 
 log = Log('SMILESENSE', 'blue')
 
-# create sqlalchemy engine to interact with db
-db_engine = sql.create_engine('sqlite:///./sqlite.db')
-metadata = sql.MetaData()
-metadata.reflect(bind=db_engine)
-
-
-class Config:
-	def __init__(self, employees: int, software_type: str, whitelist: list[str], blacklist: list[str]):
-		self.employees = employees
-		self.software_type = software_type
-		self.whitelist = whitelist
-		self.blacklist = blacklist
-
-    
-licenses = Table(
-	'licenses',
-	metadata,
-	*(
-		Column('key', sql.Text, primary_key=True),
-		Column('name', sql.Text),
-		Column('short_name', sql.Text),
-		Column('category',sql.Text),
-		Column('url', sql.Text),
-		Column('raw', sql.Text),
-	),
-	extend_existing=True
-)
-
-#with db_engine.connect() as connection:
-	#connection.execute(...)
-#	connection.commit()
 
 def compare(data):
 	"""
@@ -46,50 +19,23 @@ def compare(data):
 	:return:
 	"""
 	log.info(data)
-	config = yaml.safe_load(base64.b64decode(data.config))
-	license = base64.b64decode(data.config)
-	dependencies = base64.b64decode(data.dependencies)
+	config = yaml.safe_load(base64.b64decode(data.get('license-manifest.yaml')))  # {"keyparameter": "value"}
+	#license = base64.b64decode(data.get('LICENSE'))  # LICENSE.txt as string
+	dependency = base64.b64decode(data.get('checkPackage'))  # Name of dependency
 
-	#log.info(config)
+	#all_licenses = PyPI.get_all_licenses(dependency)  # list of LICENSE strinfs
 
-	return {'status': 1, 'compatability': 3, 'message': '...'}
+	#key_parameters = dict()
 
-
-def compare(data, files):
-	log.info(files)
-	log.info(data)
-	config = yaml.load_sage(base64.b64decode(data.config))
-	license = base64.b64decode(data.config)
-	dependencies = base64.b64decode(data.dependencies)
-	#config = yaml.safe_load(data)
-	#log.info(config)
-	return {'status': 1, 'compatability': 3, 'message': '...'}
+	#for DEPENDENCY, LICENSE in all_licenses:
+	#	key_parameters.append(extract_key_points(LICENSE))
 
 
 
-def check_match_known(license_txt) -> tuple[str | None, str | None]:
-	lst = license_txt.split('\n')
 
-	keys = []
 
-	for l in lst:
-		with db_engine.connect() as connection:
-			s = connection.execute(
-				sql.select(licenses).where(licenses.columns.raw.icontains(license_txt))
-			).first()
-
-	if s:
-		return s[0], "original"
-
-	with db_engine.connect() as connection:
-		s = connection.execute(
-			sql.select(licenses).where(licenses.columns.raw.icontains(license_txt))
-		).first()
-
-	if s:
-		return s[0], f"This license is based on {s[1]} and extended with: {license_txt.replace(s[5], str())}"
-
-	return None, None
+#	return {'0'}
+	return {'1': [['testpkg1', '0.0.1'], ['testpkg2', '2.0.9']]}
 
 
 
