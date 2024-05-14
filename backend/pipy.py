@@ -2,6 +2,7 @@ from pigeon.shortcuts import Log
 from rich import print
 import pip
 import subprocess
+import importlib
 from importlib import metadata as importlib_metadata
 from importlib.metadata import Distribution, requires
 from typing import Any
@@ -98,11 +99,23 @@ class PiPy:
 		:param func: func to call on name
 		:return: return value of func
 		"""
+		# check if package is installed
+		exists = True if importlib.util.find_spec(name) else False
+
 		# install package
-		...
-		func(name)
+		if not exists:
+			print(f'[bold red]INSTALLING {name} SINCE IT DOES NOT EXIST[/]')
+			pip.main(['install', '--user', '--break-system-packages', name])
+			print(f'[bold green]INSTALL SUCCESS[/]')	
+		
+		return_val = func(name)
+
 		# uninstall package
-		...
+		if not exists:
+			print(f'[bold red]UNINSTALLING {name}[/]')
+			pip.main(['uninstall', '-y', '--break-system-packages', name])
+
+		return return_val
 
 	@staticmethod
 	def get_dependencies(name: str) -> list[str]:
@@ -167,6 +180,16 @@ class PiPy:
 			return None
 		else:
 			return license_info[0].get('LicenseText')
+
+	@staticmethod
+	def get_all_licenses_safe(name: str) -> list[tuple[str,str]]:
+		"""
+		Grabs all licenses from all dependencies of any PyPI package (even if not installed)
+
+		:param name: the name of the PyPI package
+		:return: list of licenses as list[tuple[str,str]]
+		"""
+		return PiPy.execute_safe(test_case, PiPy.get_all_licenses)
 
 	@staticmethod
 	def get_all_licenses(name: str) -> list[tuple[str,str]]:
@@ -283,15 +306,19 @@ if __name__ == '__main__':
 		'beautifulsoup4',
 		'pigeonpost',
 		'sqlite3',
+		'rapid-sdk',
 	]
 
 	test_case = choice(examples)
+	
+	#print(f'[bold green]TESTCASE:[/] [bold yellow](LICENSES)[/] {test_case}')
+	#print(PiPy.get_license(test_case))
 
-	print(f'[bold green]TESTCASE:[/] [bold yellow](LICENSES)[/] {test_case}')
-	print(PiPy.get_license(test_case))
-
-	print(f'[bold green]TESTCASE:[/] [bold yellow](DEPENDENCIES)[/] {test_case}')
-	print(PiPy.get_dependencies(test_case))
+	#print(f'[bold green]TESTCASE:[/] [bold yellow](DEPENDENCIES)[/] {test_case}')
+	#print(PiPy.get_dependencies(test_case))
 
 	print(f'[bold green]TESTCASE:[/] [bold yellow](ALL LICENSES)[/] {test_case}')
 	print(PiPy.get_all_licenses(test_case))
+
+	print(f'[bold green]TESTCASE:[/] [bold yellow]([/][bold blue]SAFE[/][bold yellow] - ALL LICENSES)[/] {test_case}')
+	print(PiPy.get_all_licenses_safe(test_case))
