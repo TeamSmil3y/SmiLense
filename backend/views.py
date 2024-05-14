@@ -1,16 +1,19 @@
 from pigeon import Pigeon
-from pigeon.shortcuts import HTTPRequest, HTTPResponse, error
+from pigeon.shortcuts import HTTPRequest, HTTPResponse, error, Log
 import smilense
 
+log = Log('VIEWS', 'green')
+
+@Pigeon.view('/', 'application/json')
+def api_hello_world(request: HTTPRequest):
+	return ""
 
 @Pigeon.view('/api', 'application/json')
 def api_hello_world(request: HTTPRequest):
 	return "Hello World!"
 
-@Pigeon.view('/api/check_github_repo', 'application/json')
-def api_check_github_repo(request: HTTPRequest):
+@Pigeon.view('/api/compare', 'application/json')
+def api_compare(request: HTTPRequest):
 	if request.method != 'POST':
 		return error(405)
-
-	if not request.post.
-	smilense.check_github_repo()
+	return smilense.compare(request.data, request.files)
