@@ -27,6 +27,20 @@ class License:
 		"""
 		return 4
 
+	def compare(self, other: License | Config) -> int:
+		"""
+		Compares this license with another license or with a config file
+
+		:param other: the other license/ the config file to compare this license to
+		:return: 0,1,2 or 3 depending on compatability rating (0 highest, 4 lowest)
+		"""
+		if isinstance(other, License):
+			return self.compare_license(other)
+		elif isinstance(other, Config):
+			return self.compare_config(other)
+		else:
+			raise TypeError('other should be of type: License | Config')
+
 def get_package(name):
 	pkg_data = metadata.metadata(name)
 	return pkg_data
