@@ -91,6 +91,13 @@ class PiPyPackage:
 class PiPy:
 	@staticmethod
 	def execute_safe(name, func):
+		"""
+		Installes a PyPI package and calls func(name) before uninstalling the package again
+
+		:param name: name of PyPI package
+		:param func: func to call on name
+		:return: return value of func
+		"""
 		# install package
 		...
 		func(name)
@@ -162,12 +169,12 @@ class PiPy:
 			return license_info[0].get('LicenseText')
 
 	@staticmethod
-	def get_all_licenses(name: str) -> list[str]:
+	def get_all_licenses(name: str) -> list[tuple[str,str]]:
 		"""
 		Grabs all licenses from all dependencies of a PyPI package
 
 		:param name: the name of the PyPI package
-		:return: list of licenses as list[str]
+		:return: list of licenses as list[tuple[str,str]]
 		"""
 		# get all dependencies
 		dependencies = [name, *PiPy.get_dependencies(name)]
@@ -175,8 +182,7 @@ class PiPy:
 		licenses = []
 		for dependency in dependencies:
 			license = PiPy.get_license(dependency)
-			if license:
-				licenses.append(license)
+			licenses.append((dependency, license))
 		return licenses
 
 	@staticmethod
