@@ -1,48 +1,6 @@
-import sqlalchemy as sql
 from extract_key_points import *
-from sqlalchemy import Table, Column, desc, func, or_, DDLElement
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.ext.compiler import compiles
-from sqlalchemy.orm import sessionmaker
-
+from db_init import *
 import os
-
-
-# create sqlalchemy engine to interact with db
-
-
-
-db_engine=sql.create_engine('sqlite:///./sqlite.db')
-metadata = sql.MetaData()
-metadata.reflect(bind=db_engine)
-
-licenses = Table(
-    'licenses',
-    metadata,
-    *(
-        Column('key', sql.Text, primary_key=True),
-        Column('name', sql.Text),
-        Column('short_name', sql.Text),
-        Column('category',sql.Text),
-        Column('url', sql.Text),
-        Column('raw', sql.Text),
-        Column('key_parameters', sql.Text),
-
-    ),
-    extend_existing=True
-)
-
-
-CREATE = True
-DROP = True
-
-
-if DROP:
-    metadata.drop_all(bind=db_engine)
-    if not CREATE: exit()
-if CREATE:
-    metadata.create_all(bind=db_engine)
-
 
 directory = "/Users/timruppert/Downloads/scancode-licensedb-main/docs"
 
@@ -54,6 +12,9 @@ with db_engine.connect() as connection:
             f = file.read().split("---\n")
             d = {i.split(":")[0]: ":".join(i.split(":")[1:]) for i in f[1].split("\n") if i}
             print(d)
+
+            if len(connection.execute(sql.select(licenses).where(licenses.columns.name == d["name"])).all()) > 0:
+                continue
 
             raw = "\n".join(f[2:])
             url_key = None
