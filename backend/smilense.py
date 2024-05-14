@@ -6,6 +6,15 @@ import base64
 log = Log('SMILESENSE', 'blue')
 
 
+class Config:
+	def __init__(self, employees: int, software_type: str:, whitelist: list[str], blacklist: list[str]):
+		self.employees = employees
+		self.software_type = software_type
+		self.whitelist = whitelist
+		self.blacklist = blacklist
+
+
+
 def compare(data, files):
 	log.info(files)
 	log.info(data)
