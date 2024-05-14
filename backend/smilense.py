@@ -11,6 +11,15 @@ db_engine=sql.create_engine('sqlite:///./sqlite.db')
 metadata = sql.MetaData()
 metadata.reflect(bind=db_engine)
 
+
+class Config:
+	def __init__(self, employees: int, software_type: str:, whitelist: list[str], blacklist: list[str]):
+		self.employees = employees
+		self.software_type = software_type
+		self.whitelist = whitelist
+		self.blacklist = blacklist
+
+    
 licenses = Table(
 	'licenses',
 	metadata,
@@ -47,6 +56,19 @@ def compare(data):
 	return {'status': 1, 'compatability': 3, 'message': '...'}
 
 
+def compare(data, files):
+	log.info(files)
+	log.info(data)
+
+  config = yaml.load_sage(base64.b64decode(data.config))
+	license = base64.b64decode(data.config)
+	dependencies = base64.b64decode(data.dependencies)
+
 
 def check_match_known():
 	...
+=======
+	#config = yaml.safe_load(data)
+	#log.info(config)
+	return {'status': 1, 'compatability': 3, 'message': '...'
+}

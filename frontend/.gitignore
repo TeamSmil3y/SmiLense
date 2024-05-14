@@ -1,0 +1,95 @@
+# Dependency directories
+node_modules/
+
+# Logs
+logs
+*.log
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Cache
+*.cache
+*.tgz
+
+# OS-generated files
+.DS_Store
+ehthumbs.db
+Thumbs.db
+
+# Environment variables file
+.env
+
+# User-specific files
+npm-debug.log
+yarn-error.log
+
+# Coverage directory used by tools like istanbul
+coverage
+
+# Compiled binary addons (like bindings for native modules)
+/build/Release
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# dotenv environment variables file
+.env
+.env.test
+.env*.local
+
+# Next.js build output
+.next/
+out/
+
+# Nuxt.js build output
+.nuxt/
+
+# Vuepress build output
+.vuepress/dist/
+
+# Serverless directories
+.serverless/
+
+# Next.js serverless build output
+/.serverless/
+
+# Firebase directory
+/firebase/
+
+# FuseBox output
+/fusebox/
+
+# DynamoDB Local files
+.dynamodb/
+
+# TernJS port file
+.tern-port
+
+# Visual Studio Code directory
+.vscode/
+
+# IntelliJ IDEA directory
+.idea/
+
+# Sublime Text directory
+.sublime-project
+.sublime-workspace
+
+# Webstorm directory
+.idea/
+
+# Mac files
+.DS_Store
+
+# vim files
+*.swp
+
+# compiled files
+out

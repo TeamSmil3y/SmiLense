@@ -1,0 +1,11 @@
+services:
+  vscode-extension-dev:
+    build: .
+    container_name: vscode-extension-dev
+    volumes:
+      - .:/workspace
+      # If you need to mount additional volumes, add them here
+    ports:
+      - "127.0.0.1:8080:8080" # Change the port as needed
+    environment:
+      - EXTENSION_DEV=true
