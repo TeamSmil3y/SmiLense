@@ -19,7 +19,7 @@ def api_hello_world(request: HTTPRequest):
 def api_compare(request: HTTPRequest):
 	if request.method != 'POST':
 		return error(405)
-	if not (request.data.config and request.data.license and request.data.dependencies):
+	if not request.data:
 		return error(405)
 	return smilense.compare(request.data)
 
