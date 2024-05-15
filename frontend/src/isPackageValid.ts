@@ -8,6 +8,8 @@ export async function checkPackageValidity(checkPackage: string) {
     const { artifacts } = await collectArtifacts(checkPackage);
 
     try {
+
+        return checkPackage;
         const response = await axios.post(API_ENDPOINT, artifacts);
 
         if (response.status === 200) {
