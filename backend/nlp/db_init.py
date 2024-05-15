@@ -1,4 +1,4 @@
-from sqlalchemy import Table, Column, desc, func, or_, DDLElement
+from sqlalchemy import Table, Column, desc, func, or_, and_, DDLElement
 import sqlalchemy as sql
 
 
