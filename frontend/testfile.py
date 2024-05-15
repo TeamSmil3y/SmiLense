@@ -1,6 +1,3 @@
 import someproblematicpackage
-import someproblematicpackage
-import someproblematicpackage
-import someproblematicpackage
-a
-sdf
+import 1
+import 3

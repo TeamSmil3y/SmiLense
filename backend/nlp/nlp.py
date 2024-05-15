@@ -15,7 +15,7 @@ MODEL_IDX = 0
 
 MODEL_NAME = MODEL_NAMES[MODEL_IDX]
 
-model = GPT4All(model_name=MODEL_NAME, model_path=Path.cwd() / "models")
+model = GPT4All(model_name=MODEL_NAME, model_path=Path.cwd() / "nlp/models")
 
 def chain(license: str):
     with model.chat_session():
@@ -30,7 +30,7 @@ def is_compatible(license: str, compatibilities: list[str], extra_information: s
     with model.chat_session():
         if MODEL_IDX == 1:
             model.generate(
-                f"Is following LICENSE compatible with {', '.join(compatibilities)} use? The company is large."
+                f"Is following LICENSE compatible with {', '.join(compatibilities)} use?"
                 "Reply ONLY with just 'Yes' or 'No'."
             )
         else:
@@ -40,7 +40,6 @@ def is_compatible(license: str, compatibilities: list[str], extra_information: s
                 "You have to reply machine-readable with ONLY the integer 1 for yes, 2 for probably yes, 3 for probably not, 4 for no."
                 f"There's following information: {extra_information}." if extra_information else ""
             )
-
 
         res = model.generate(license)
 

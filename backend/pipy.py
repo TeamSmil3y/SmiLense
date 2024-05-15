@@ -6,7 +6,6 @@ import importlib
 from importlib import metadata as importlib_metadata
 from importlib.metadata import Distribution, requires
 from typing import Any
-from smilense import Config
 import nlp.data_service as db
 import requests
 import json
@@ -17,65 +16,10 @@ from random import choice
 log = Log("PiPy-API", "#03e3fc")
 
 
-class License:
-	def __init__(self, licensetext: str, licensefile: str, license: str):
-		self.licensetext = licensetext
-		self.licensefile = licensefile
-		self.license = license
-	
-	def compare_config(self, config: Config) -> int:
-		"""
-		Compares the client configuration with this license for compatability.
-
-		:param config: the config to compare this license to
-		:return: 0,1,2 or 3 depending on compatability rating (0 highest, 4 lowest)
-		"""
-		return 4
-
-	def compare_license(self, other: Any) -> int:
-		"""
-		Compares this license with the provided other license
-
-		:param other: the license to compare this license to
-		:return: 0,1,2 or 3 depending on compatability rating (0 highest, 4 lowest)
-		"""
-		return 4
-
-	def compare(self, other: Any | Config) -> int:
-		"""
-		Compares this license with another license or with a config file
-
-		:param other: the other license/ the config file to compare this license to
-		:return: 0,1,2 or 3 depending on compatability rating (0 highest, 4 lowest)
-		"""
-		if isinstance(other, type(self)):
-			return self.compare_license(other)
-		elif isinstance(other, Config):
-			return self.compare_config(other)
-		else:
-			raise TypeError('other should be of type: License | Config')
-
-	@classmethod
-	def from_pipy_package(cls, name):
-		"""
-		Grabs pipy package form pipy and constructs License object for it.
-
-		:param name: name of pipy package
-		:return: the License object corresponding to the package
-		"""
-		pkg_data = PiPy.get_pkg_metadata(name)
-
-		# if licensetext or licensefile attributes are set
-		licensetext=pkg_data.get('licensetext')
-		licensefile=pkg_data.get('licensefile')
-		license=pkg_data.get('license')
-	
-		return cls(licensetext=licensetext, licensefile=licensefile, license=license)
-
 class PiPyPackage:
 	def __init__(self, metadata):
 		self.metadata = metadata
-	
+
 	def get_repo(self) -> str | None:
 		"""
 		Gets the url of the github repository
@@ -289,6 +233,21 @@ class PiPy:
 
 	@staticmethod
 	def api_call(name: str) -> dict:
+		"""
+		Does an API call to PiPy to get the JSON metadata for a given package.
+
+		:param name: name of the PiPy package
+		:return: the data as a dict
+		"""
+		url = f'https://pypi.org/pypi/{name}/json'
+		log.verbose(f'checking {url}')
+		response = requests.get(url)
+		data = response.json()
+
+		return dict(data)
+
+	@staticmethod
+	def isntall(name: str) -> dict:
 		"""
 		Does an API call to PiPy to get the JSON metadata for a given package.
 
