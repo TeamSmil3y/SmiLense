@@ -7,6 +7,7 @@ from importlib import metadata as importlib_metadata
 from importlib.metadata import Distribution, requires
 from typing import Any
 from smilense import Config
+import nlp.data_service as db
 import requests
 import json
 import re
@@ -131,6 +132,7 @@ class PiPy:
 			return None
 		else:
 			if not dependency_info: return dependency_info
+			#print(dependency_info)
 			return PiPy.flatten_dependencies(dependency_info[0])
 
 	@staticmethod
@@ -204,8 +206,12 @@ class PiPy:
 
 		licenses = []
 		for dependency in dependencies:
-			license = PiPy.get_license(dependency)
-			licenses.append((dependency, license))
+			dependency_version = 'unknown'
+			if db.check_dependency_cache(dependency, dependency_version):
+				license = db.get_cached_properties(dependency, dependency_version)
+			else:
+				license = PiPy.get_license(dependency)
+			licenses.append(((dependency, dependency_version), license))
 		return licenses
 
 	@staticmethod
