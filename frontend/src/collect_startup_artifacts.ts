@@ -19,15 +19,15 @@ export async function findFileInWorkspace(pattern: string): Promise<Uri | undefi
     return undefined;
 }
 
-export async function collectArtifacts(checkPackage: string): Promise<{ artifacts: { [key: string]: string } }> {
-    const artifacts = { artifacts: {} };
+export async function collectArtifacts(checkPackage: string): Promise<any> {
+    // const artifacts = { artifacts: {} };
 
     // Read license manifest file
     const manifestFileUri = await findFileInWorkspace(LICENSE_MANIFEST_FILE);
 
     if (!manifestFileUri) {
         console.error(`${LICENSE_MANIFEST_FILE} file not found.`);
-        return artifacts;
+        return null;
     }
 
     // // Read license file
@@ -50,7 +50,7 @@ export async function collectArtifacts(checkPackage: string): Promise<{ artifact
         // Read license manifest file
         const manifestFilePath = manifestFileUri.fsPath;
         const manifestFileContent = fs.readFileSync(manifestFilePath, 'utf8');
-        const manifest: Manifest = yaml.load(manifestFileContent) as Manifest;
+        // const manifest: Manifest = yaml.load(manifestFileContent) as Manifest;
 
         // // Read license file
         // const licenseFilePath = licenseFileUri.fsPath;
@@ -64,15 +64,13 @@ export async function collectArtifacts(checkPackage: string): Promise<{ artifact
         const manifestBase64Content = Buffer.from(manifestFileContent).toString('base64');
         // const licenseBase64Content = Buffer.from(licenseFileContent).toString('base64');
         // const requirementsBase64Content = Buffer.from(requirementsFileContent).toString('base64');
-        const checkPackageBase64Content = Buffer.from(checkPackage).toString('base64');
+        // const checkPackageBase64Content = Buffer.from(checkPackage).toString('base64');
 
         // Create artifacts object
-        const result: { artifacts: { [key: string]: string } } = {
-            artifacts: {
-                [LICENSE_MANIFEST_FILE]: manifestBase64Content,
-                [CHECK_PACKAGE]: checkPackageBase64Content
-                // [LICENSE_FILE]: licenseBase64Content,
-            }
+        const result: any = {
+            [LICENSE_MANIFEST_FILE]: manifestBase64Content,
+            checkPackageName: checkPackage
+            // [LICENSE_FILE]: licenseBase64Content,
         };
 
         return result;

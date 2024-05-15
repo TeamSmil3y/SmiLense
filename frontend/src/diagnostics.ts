@@ -1,11 +1,21 @@
 import * as vscode from 'vscode';
 import { checkPackageValidity } from './isPackageValid';
 
+// 0 : compatible (no-colour)
+// 1 : almost compatible (blue)
+// 2 : might be compatible (yellow)
+// 3 : incompatible (red)
+// 4 : not found (orange)
+export const LICENSE_COMPATIBLE = '0';
+export const LICENSE_ALMOST_COMPATIBLE = '1';
+export const LICENSE_MIGHT_BE_COMPATIBLE = '2';
+export const LICENSE_INCOMPATIBLE = '3';
+export const LICENSE_NOT_FOUND = '4';
+
 /** Code that is used to associate diagnostic entries with code actions. */
 export const PACKAGE_LICENSE_MENTION = 'package_license_mention';
-export const LICENSE_NOT_FOUND = '1';
-export const LICENSE_INCOMPATIBLE = '0';
-// export const LICENSE_COMPATIBLE = '1';
+
+
 
 /** String to detect import package statement in a file. */
 const IMPORT_KEYWORD = 'import';
@@ -25,15 +35,12 @@ export async function refreshDiagnostics(doc: vscode.TextDocument, licenseDiagno
 
 			// check if its a valid package
 			let checkPackage = lineOfText.text.split(" ").pop() || "";
-			// checkPackageValidity(checkPackage).then(encodedData => {
-			// 	console.log({ checkPackageValidity: encodedData });
-			// });
 			let checkPackageOutput = await checkPackageValidity(checkPackage)
 			console.log({ checkPackageOutput })
-			let isValidPackage = false;
+			let isValidPackage = checkPackageOutput === "0";
 
 			if (!isValidPackage) {
-				diagnostics.push(createPackageLicenseDiagnostic(doc, lineOfText, lineIndex));
+				diagnostics.push(createPackageLicenseDiagnostic(doc, lineOfText, lineIndex, checkPackageOutput));
 			}
 
 		}
@@ -42,16 +49,9 @@ export async function refreshDiagnostics(doc: vscode.TextDocument, licenseDiagno
 	licenseDiagnostics.set(doc.uri, diagnostics);
 }
 
-function createPackageLicenseDiagnostic(doc: vscode.TextDocument, lineOfText: vscode.TextLine, lineIndex: number): vscode.Diagnostic {
+function createPackageLicenseDiagnostic(doc: vscode.TextDocument, lineOfText: vscode.TextLine, lineIndex: number, checkPackageOutput: any): vscode.Diagnostic {
 
 	let checkPackage = lineOfText.text.split(" ").pop() || "";
-
-	// console.log({ checkPackage })
-
-	// checkPackageValidity(checkPackage).then(encodedData => {
-	// 	console.log({ checkPackageValidity: encodedData });
-	// });
-
 
 	// find where in the line of that the checkPackage is mentioned
 	const index = lineOfText.text.indexOf(checkPackage);
@@ -59,21 +59,33 @@ function createPackageLicenseDiagnostic(doc: vscode.TextDocument, lineOfText: vs
 	// create range that represents, where in the document the word is
 	const range = new vscode.Range(lineIndex, index, lineIndex, index + checkPackage.length);
 
-	const diagnosticSeverity = LICENSE_NOT_FOUND;
+	let diagnosticSeverity: vscode.DiagnosticSeverity = vscode.DiagnosticSeverity.Information
+	let diagnosticMessages = []
+	let totalProblems = 0
 
-	if (diagnosticSeverity === LICENSE_NOT_FOUND) {
-		const diagnostic = new vscode.Diagnostic(range, "This package's license might be incompatible with your project",
-			vscode.DiagnosticSeverity.Error);
-		diagnostic.code = LICENSE_NOT_FOUND;
-		diagnostic.message = "6 incompatible licenses\n4 dependencies with no licenses";
-		return diagnostic;
-	} else {
-		const diagnostic = new vscode.Diagnostic(range, "This package's license might be incompatible with your project",
-			vscode.DiagnosticSeverity.Warning);
-		diagnostic.code = LICENSE_INCOMPATIBLE;
-		diagnostic.message = "6 incompatible licenses\n4 dependencies with no licenses";
-		return diagnostic;
+	if (checkPackageOutput.hasOwnProperty("1")) {
+		diagnosticSeverity = vscode.DiagnosticSeverity.Information
+		diagnosticMessages.push(`${checkPackageOutput["1"].length} license(s) almost compatible`)
+		totalProblems += checkPackageOutput["1"].length
+	} else if (checkPackageOutput.hasOwnProperty("2")) {
+		diagnosticSeverity = vscode.DiagnosticSeverity.Hint
+		diagnosticMessages.push(`${checkPackageOutput["2"].length} license(s) might be compatible`)
+		totalProblems += checkPackageOutput["2"].length
+	} else if (checkPackageOutput.hasOwnProperty("4")) {
+		diagnosticSeverity = vscode.DiagnosticSeverity.Warning
+		diagnosticMessages.push(`${checkPackageOutput["4"].length} license(s) not found`)
+		totalProblems += checkPackageOutput["4"].length
+	} else if (checkPackageOutput.hasOwnProperty("3")) {
+		diagnosticSeverity = vscode.DiagnosticSeverity.Error
+		diagnosticMessages.push(`${checkPackageOutput["3"].length} license(s) incompatible`)
+		totalProblems += checkPackageOutput["3"].length
 	}
+
+	const diagnostic = new vscode.Diagnostic(range, `This package's license has ${totalProblems} problem(s)`,
+	diagnosticSeverity);
+	diagnostic.code = "1";
+	diagnostic.message = diagnosticMessages.reverse().join('\n');
+	return diagnostic;
 }
 
 export async function subscribeToDocumentChanges(context: vscode.ExtensionContext, licenseDiagnostics: vscode.DiagnosticCollection): Promise<void> {
