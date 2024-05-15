@@ -30,13 +30,13 @@ export async function collectArtifacts(checkPackage: string): Promise<{ artifact
         return artifacts;
     }
 
-    // Read license file
-    const licenseFileUri = await findFileInWorkspace(LICENSE_FILE);
+    // // Read license file
+    // const licenseFileUri = await findFileInWorkspace(LICENSE_FILE);
 
-    if (!licenseFileUri) {
-        console.error(`${LICENSE_FILE} file not found.`);
-        return artifacts;
-    }
+    // if (!licenseFileUri) {
+    //     console.error(`${LICENSE_FILE} file not found.`);
+    //     return artifacts;
+    // }
 
     // // Read requirements file
     // const requirementsFileUri = await findFileInWorkspace(REQUIREMENTS_FILE);
@@ -52,9 +52,9 @@ export async function collectArtifacts(checkPackage: string): Promise<{ artifact
         const manifestFileContent = fs.readFileSync(manifestFilePath, 'utf8');
         const manifest: Manifest = yaml.load(manifestFileContent) as Manifest;
 
-        // Read license file
-        const licenseFilePath = licenseFileUri.fsPath;
-        const licenseFileContent = fs.readFileSync(licenseFilePath, 'utf8');
+        // // Read license file
+        // const licenseFilePath = licenseFileUri.fsPath;
+        // const licenseFileContent = fs.readFileSync(licenseFilePath, 'utf8');
 
         // // Read requirements file
         // const requirementsFilePath = requirementsFileUri.fsPath;
@@ -62,7 +62,7 @@ export async function collectArtifacts(checkPackage: string): Promise<{ artifact
 
         // Encode contents to base64
         const manifestBase64Content = Buffer.from(manifestFileContent).toString('base64');
-        const licenseBase64Content = Buffer.from(licenseFileContent).toString('base64');
+        // const licenseBase64Content = Buffer.from(licenseFileContent).toString('base64');
         // const requirementsBase64Content = Buffer.from(requirementsFileContent).toString('base64');
         const checkPackageBase64Content = Buffer.from(checkPackage).toString('base64');
 
@@ -70,8 +70,8 @@ export async function collectArtifacts(checkPackage: string): Promise<{ artifact
         const result: { artifacts: { [key: string]: string } } = {
             artifacts: {
                 [LICENSE_MANIFEST_FILE]: manifestBase64Content,
-                [LICENSE_FILE]: licenseBase64Content,
                 [CHECK_PACKAGE]: checkPackageBase64Content
+                // [LICENSE_FILE]: licenseBase64Content,
             }
         };
 
