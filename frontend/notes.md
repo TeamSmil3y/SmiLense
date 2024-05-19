@@ -17,4 +17,5 @@ npm install --global yo generator-code
   "checkPackage": "c29tZXByb2JsZW1hdGljcGFja2FnZQ=="
 }
 -----
-
+API-KEY-REDACTED
+----

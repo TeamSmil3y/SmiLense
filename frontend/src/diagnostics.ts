@@ -15,8 +15,6 @@ export const LICENSE_NOT_FOUND = '4';
 /** Code that is used to associate diagnostic entries with code actions. */
 export const PACKAGE_LICENSE_MENTION = 'package_license_mention';
 
-
-
 /** String to detect import package statement in a file. */
 const IMPORT_KEYWORD = 'import';
 
@@ -35,8 +33,8 @@ export async function refreshDiagnostics(doc: vscode.TextDocument, licenseDiagno
 
 			// check if its a valid package
 			let checkPackage = lineOfText.text.split(" ").pop() || "";
-			let checkPackageOutput = await checkPackageValidity(checkPackage)
-			console.log({ checkPackageOutput })
+
+			let checkPackageOutput: any = await checkPackageValidity(checkPackage)
 			let isValidPackage = checkPackageOutput === "0";
 
 			if (!isValidPackage) {
@@ -67,15 +65,21 @@ function createPackageLicenseDiagnostic(doc: vscode.TextDocument, lineOfText: vs
 		diagnosticSeverity = vscode.DiagnosticSeverity.Information
 		diagnosticMessages.push(`${checkPackageOutput["1"].length} license(s) almost compatible`)
 		totalProblems += checkPackageOutput["1"].length
-	} else if (checkPackageOutput.hasOwnProperty("2")) {
+	}
+	
+	if (checkPackageOutput.hasOwnProperty("2")) {
 		diagnosticSeverity = vscode.DiagnosticSeverity.Hint
 		diagnosticMessages.push(`${checkPackageOutput["2"].length} license(s) might be compatible`)
 		totalProblems += checkPackageOutput["2"].length
-	} else if (checkPackageOutput.hasOwnProperty("4")) {
+	}
+	
+	if (checkPackageOutput.hasOwnProperty("4")) {
 		diagnosticSeverity = vscode.DiagnosticSeverity.Warning
 		diagnosticMessages.push(`${checkPackageOutput["4"].length} license(s) not found`)
 		totalProblems += checkPackageOutput["4"].length
-	} else if (checkPackageOutput.hasOwnProperty("3")) {
+	}
+	
+	if (checkPackageOutput.hasOwnProperty("3")) {
 		diagnosticSeverity = vscode.DiagnosticSeverity.Error
 		diagnosticMessages.push(`${checkPackageOutput["3"].length} license(s) incompatible`)
 		totalProblems += checkPackageOutput["3"].length

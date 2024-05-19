@@ -1,8 +1,8 @@
-from sqlalchemy import Table, Column, desc, func, or_, DDLElement
+from sqlalchemy import Table, Column, desc, func, or_, and_, DDLElement
 import sqlalchemy as sql
 
 
-db_engine = sql.create_engine('sqlite:///./sqlite.db')
+db_engine = sql.create_engine('sqlite:///./nlp/sqlite.db')
 metadata = sql.MetaData()
 metadata.reflect(bind=db_engine)
 

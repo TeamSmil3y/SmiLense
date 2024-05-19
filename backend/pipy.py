@@ -6,6 +6,7 @@ import importlib
 from importlib import metadata as importlib_metadata
 from importlib.metadata import Distribution, requires
 from typing import Any
+import nlp.data_services as db
 import requests
 import json
 import re
@@ -54,6 +55,9 @@ class PiPy:
 		
 		return_val = func(name)
 
+		# don't you wanna keep these? ;)
+		return return_val
+
 		# uninstall package
 		if not exists:
 			print(f'[bold red]UNINSTALLING {name}[/]')
@@ -62,7 +66,7 @@ class PiPy:
 		return return_val
 
 	@staticmethod
-	def get_dependencies(name: str) -> list[str]:
+	def get_dependencies(name: str) -> set[str]:
 		"""
 		Grabs the dependencies of a PiPy package
 
@@ -75,7 +79,8 @@ class PiPy:
 			return None
 		else:
 			if not dependency_info: return dependency_info
-			return PiPy.flatten_dependencies(dependency_info[0])
+			#print(dependency_info)
+			return set(PiPy.flatten_dependencies(dependency_info[0]))
 
 	@staticmethod
 	def flatten_dependencies(dependency_info: dict) -> list[str]:
@@ -133,7 +138,7 @@ class PiPy:
 		:param name: the name of the PyPI package
 		:return: list of licenses as list[tuple[str,str]]
 		"""
-		return PiPy.execute_safe(test_case, PiPy.get_all_licenses)
+		return PiPy.execute_safe(name, PiPy.get_all_licenses)
 
 	@staticmethod
 	def get_all_licenses(name: str) -> list[tuple[str,str]]:
@@ -144,12 +149,20 @@ class PiPy:
 		:return: list of licenses as list[tuple[str,str]]
 		"""
 		# get all dependencies
-		dependencies = [name, *PiPy.get_dependencies(name)]
+		dependencies = [*PiPy.get_dependencies(name)]
+		print(f'[bold green]FOUND DEPENDENCIES FOR {name}:[/] {dependencies}')
 
 		licenses = []
 		for dependency in dependencies:
-			license = PiPy.get_license(dependency)
-			licenses.append((dependency, license))
+			dependency_version = 'unknown'
+			if dependency:
+				if db.check_dependency_cache(dependency, dependency_version):
+					license = db.get_cached_properties(dependency, dependency_version)
+					print(f'[bold green]FOUND CACHE FOR[/] {dependency}: {license}')
+				else:
+					license = PiPy.get_license(dependency)
+					print(f'[bold green]LICENSE FOR[/] {dependency}: {None if not license else license[0:30]}...')
+				licenses.append(((dependency, dependency_version), license))
 		return licenses
 
 	@staticmethod

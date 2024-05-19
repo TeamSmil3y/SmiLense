@@ -1,5 +1,5 @@
 import json
-from nlp.extract_key_points import extract_key_points
+from nlp.extract_key_points import extract_key_points_2
 import yaml
 import base64
 from pigeon.shortcuts import Log
@@ -7,6 +7,8 @@ import sqlalchemy as sql
 from sqlalchemy import Table, Column, desc, func
 from pipy import PiPy as PyPI
 from nlp.db_init import *
+import nlp.data_services as db
+import compare_key_params
 
 log = Log('SMILESENSE', 'blue')
 
@@ -19,23 +21,69 @@ def compare(data):
 	:return:
 	"""
 	log.info(data)
+	print(data)
 	config = yaml.safe_load(base64.b64decode(data.get('license-manifest.yaml')))  # {"keyparameter": "value"}
-	#license = base64.b64decode(data.get('LICENSE'))  # LICENSE.txt as string
-	dependency = base64.b64decode(data.get('checkPackage'))  # Name of dependency
+	dependency = data.get('checkPackageName')  # Name of dependency
+	version = data.get('checkPackageVersion')  # Name of dependency
 
-	#all_licenses = PyPI.get_all_licenses(dependency)  # list of LICENSE strinfs
+	all_licenses = PyPI.get_all_licenses_safe(dependency)  # list of LICENSE strinfs
+
+	response = dict()
+
+	for (dependency_name, dependency_version), license_or_props in all_licenses:
+		props = dict()
+		if isinstance(license_or_props, str):
+			lcs = license_or_props
+			hashed_lcs = str(hash(lcs))
+
+			props = extract_key_points_2(lcs)
+
+			if props:
+				db.write_cache(dependency_name, dependency_version, hashed_lcs, props)
+				lvl = str(compare_key_params.calc_score(config, props))
+			else:
+				lvl = 4
+
+		elif isinstance(license_or_props, dict):
+			props = license_or_props
+
+			lvl = str(compare_key_params.calc_score(config, props))
+
+		elif license_or_props is None:
+
+			lvl = 4
+
+		info = dict()
+		if props:
+			info = compare_key_params.differing_params_dict(config, [props])
+
+
+
+		if lvl in response.keys():
+
+			response[lvl].append([dependency_name, dependency_version, info])
+		else:
+			response[lvl] = [[dependency_name, dependency_version, info]]
+
 
 	#key_parameters = dict()
 
 	#for DEPENDENCY, LICENSE in all_licenses:
 	#	key_parameters.append(extract_key_points(LICENSE))
 
-
-
-
-
 #	return {'0'}
-	return {'1': [['testpkg1', '0.0.1'], ['testpkg2', '2.0.9']]}
+
+
+	if response.keys() == ["0"] or not response.get('1') and not response.get('2') and not response.get('3'):
+		return '0'
+
+
+	for i in range(1,4):
+		if str(i) in response.keys():
+			continue
+		response[str(i)] = []
+
+	return response
 
 
 

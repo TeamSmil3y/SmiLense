@@ -19,7 +19,7 @@
 	],
 	"activationEvents": [
 		"workspaceContains:license-manifest.yaml",
-		"onLanguage:python"
+	    "onLanguage:python"
 	],
 	"main": "./out/extension.js",
 	"scripts": {
